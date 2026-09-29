@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analisis Coaching JPA</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f3f4f6; 
+            margin: 0; 
+            padding: 30px; 
+            color: #333;
+        }
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 { margin: 0; color: #1f2937; }
+        .header p { color: #6b7280; }
+        
+        /* KPI Cards */
+        .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border-top: 5px solid #3b82f6; display: flex; flex-direction: column; justify-content: center;}
+        .kpi-title { font-size: 14px; font-weight: 600; color: #6b7280; text-transform: uppercase; }
+        .kpi-value { font-size: 36px; font-weight: bold; color: #111827; margin-top: 10px; }
+        .kpi-value.small { font-size: 24px; }
+        
+        /* Charts */
+        .charts-container { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 30px;}
+        .chart-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); flex: 2; min-width: 300px; }
+        .chart-card.pie { flex: 1; }
+        .chart-title { text-align: center; margin-bottom: 20px; color: #4b5563; font-size: 16px; font-weight: 600; }
+
+        /* Sections (Analysis, Tables) */
+        .section-title { font-size: 20px; font-weight: bold; color: #1f2937; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; margin-top: 40px; }
+        
+        .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .analysis-card { background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #8b5cf6; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .analysis-card h3 { margin-top: 0; font-size: 16px; color: #4c1d95; }
+        .analysis-card ul { padding-left: 20px; margin-bottom: 0; font-size: 14px; color: #4b5563; }
+        .analysis-card ul li { margin-bottom: 8px; }
+
+        .data-table { width: 100%; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-collapse: collapse; margin-bottom: 20px; }
+        .data-table th, .data-table td { padding: 15px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 14px; vertical-align: middle;}
+        .data-table th { background-color: #f9fafb; font-weight: 600; color: #374151; }
+        .badge { background-color: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; margin-bottom: 4px;}
+
+        /* Button Link */
+        .btn-link { background-color: #f9fafb; color: #3b82f6; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: bold; border: 1px solid #d1d5db; display: inline-block; transition: all 0.2s; white-space: nowrap; }
+        .btn-link:hover { background-color: #e5e7eb; border-color: #9ca3af; color: #1d4ed8; }
+
+        /* Upload Module Styles */
+        .upload-module { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .form-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; }
+        .form-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; }
+        .form-group label { font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .btn-submit { background-color: #3b82f6; color: white; border: none; padding: 12px 24px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s; margin-top: 10px;}
+        .btn-submit:hover { background-color: #2563eb; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Dashboard Analisis Coaching Peperiksaan JPA</h1>
+        <p>Rumusan data penyertaan, demografi gred calon, tarikh dan analisis maklumat.</p>
+    </div>
+
+    <!-- Modul Metrik Utama -->
+    <div class="kpi-container">
+        <div class="kpi-card"><div class="kpi-title">Jumlah Agensi Terlibat</div><div class="kpi-value">5</div></div>
+        <div class="kpi-card" style="border-top-color: #10b981;"><div class="kpi-title">Jumlah Calon Peserta</div><div class="kpi-value">280</div></div>
+        <div class="kpi-card" style="border-top-color: #f59e0b;"><div class="kpi-title">Jumlah Ceramah</div><div class="kpi-value">5</div></div>
+        <div class="kpi-card" style="border-top-color: #ef4444;"><div class="kpi-title">Ceramah Mengikut Bulan</div><div class="kpi-value small">Ogos: 3 | Sep: 2</div></div>
+    </div>
+
+    <!-- Modul Visualisasi Graf -->
+    <div class="charts-container">
+        <div class="chart-card">
+            <div class="chart-title">Jumlah Peserta Mengikut Lokasi (Hover untuk Maklumat Gred)</div>
+            <canvas id="barChart"></canvas>
+        </div>
+        <div class="chart-card pie">
+            <div class="chart-title">Pecahan Medium Pelaksanaan</div>
+            <canvas id="pieChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Maklumat Gred Calon & Tarikh -->
+    <div class="section-title">Maklumat Kumpulan Sasar, Tarikh & Gred Calon Mengikut Sesi/Lokasi</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Tarikh Ceramah</th>
+                <th>Lokasi / Penganjur</th>
+                <th>Kumpulan Sasar & Gred Calon</th>
+                <th>Jumlah Calon</th>
+                <th>Tindakan (Rujukan Asal)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>7 Ogos 2026</strong></td>
+                <td><strong>Jabatan Kehakiman Syariah Malaysia (JKSM)</strong><br><span style="color:#6b7280; font-size:12px;">Kompleks Islam Putrajaya</span></td>
+                <td>
+                    <span class="badge">Gred 1 hingga 5</span><br>
+                    Kumpulan Pelaksana Gred 1 hingga 5 merangkumi Pelbagai Skim Perkhidmatan di JKSM (N/LS/S/W).
+                </td>
+                <td>55 calon</td>
+                <td><a href="Pelaporan Kehadiran Coaching JKSM.pdf" target="_blank" class="btn-link">📄 Buka Laporan</a></td>
+            </tr>
+            <tr>
+                <td><strong>10 Ogos 2026</strong></td>
+                <td><strong>MADA Rice Training Center (MRTC), Kedah</strong><br><span style="color:#6b7280; font-size:12px;">Ibu Pejabat MADA</span></td>
+                <td>
+                    <span class="badge">Gred 1 - 4 & Setaraf</span> <span class="badge">Gred 5 & Ke Atas</span><br>
+                    Melibatkan peperiksaan perkhidmatan dari Gred 1 hingga 4 dan setaraf serta Gred 5 dan ke atas dan setaraf.
+                </td>
+                <td>110 calon</td>
+                <td><a href="Laporan Coaching MADA, Kedah.docx" target="_blank" class="btn-link">📄 Buka Laporan</a></td>
+            </tr>
+            <tr>
+                <td><strong>19 Ogos 2026</strong></td>
+                <td><strong>INTAN Kampus Wilayah Timur (INTIM)</strong><br><span style="color:#6b7280; font-size:12px;">Kemaman, Terengganu</span></td>
+                <td>
+                    <span class="badge">Gred N1</span><br>
+                    Kumpulan Pelaksana Lantikan Baharu Perkhidmatan Awam Persekutuan bagi skim Pembantu Tadbir (P/O) N1.
+                </td>
+                <td>44 calon</td>
+                <td><a href="Pelaporan Kehadiran Coaching JPA (INTIM).pdf" target="_blank" class="btn-link">📄 Buka Laporan</a></td>
+            </tr>
+            <tr>
+                <td><strong>3 September 2026</strong></td>
+                <td><strong>JBPM Ibu Pejabat Negeri Perak</strong><br><span style="color:#6b7280; font-size:12px;">Jabatan Bomba dan Penyelamat Negeri Perak</span></td>
+                <td>
+                    <span class="badge">Gred KB1 / KB5 / KB9</span><br>
+                    Kumpulan Pelaksana Pegawai Skim Bomba Gred KB1/KB5/KB9.
+                </td>
+                <td>25 calon</td>
+                <td><a href="Pelaporan Kehadiran Coaching JBPM Perak.docx" target="_blank" class="btn-link">📄 Buka Laporan</a></td>
+            </tr>
+            <tr>
+                <td><strong>13 September 2026</strong></td>
+                <td><strong>INTAN Kampus Jalan Elmu</strong><br><span style="color:#6b7280; font-size:12px;">Sektor Pengurusan Perkhidmatan Kumpulan Pelaksana, JPA</span></td>
+                <td>
+                    <span class="badge">Gred N1</span><br>
+                    Kumpulan Pelaksana Lantikan Baharu Perkhidmatan Awam Persekutuan bagi skim Pembantu Tadbir (P/O) N1.
+                </td>
+                <td>46 calon</td>
+                <td><a href="5. Pelaporan Kehadiran Coaching JPA (INTAN JALAN ELMU).docx" target="_blank" class="btn-link">📄 Buka Laporan</a></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Analisis Pertanyaan Calon -->
+    <div class="section-title">Analisis Tema Pertanyaan Utama Daripada Calon (5 Isu Utama)</div>
+    <div class="analysis-grid">
+        <div class="analysis-card" style="border-left-color: #3b82f6;">
+            <h3>1. Bahan Rujukan & Sukatan</h3>
+            <ul>
+                <li>Calon tidak tahu sukatan peperiksaan yang sebenar.</li>
+                <li>Kekeliruan tentang bahan dan buku yang dibenarkan dibawa/dirujuk semasa peperiksaan.</li>
+                <li>Tidak tahu cara menggunakan atau mencari jawapan di dalam buku rujukan dengan berkesan.</li>
+            </ul>
+        </div>
+        <div class="analysis-card" style="border-left-color: #8b5cf6;">
+            <h3>2. Pemahaman Kehendak Soalan (Tugasan)</h3>
+            <ul>
+                <li>Calon tidak faham soalan atau tugasan yang perlu dijawab, terutamanya perbezaan antara kajian kes atau soalan langsung.</li>
+                <li>Calon berada dalam dilema untuk menentukan topik mana yang perlu diutamakan dan difokuskan.</li>
+            </ul>
+        </div>
+        <div class="analysis-card" style="border-left-color: #10b981;">
+            <h3>3. Teknik Menjawab</h3>
+            <ul>
+                <li>Dilema format jawapan: Adakah perlu menjawab dalam bentuk 'point', perenggan, atau menyalin semula maklumat.</li>
+                <li>Gagal menepati kehendak soalan dan kurang tepat dalam menghuraikan isi jawapan.</li>
+                <li>Calon tidak tahu kaedah standard mengikut skema untuk memperoleh markah penuh bagi satu-satu soalan.</li>
+            </ul>
+        </div>
+        <div class="analysis-card" style="border-left-color: #f59e0b;">
+            <h3>4. Pengurusan Masa Peperiksaan</h3>
+            <ul>
+                <li>Isu yang sangat kritikal di mana calon sering mengadu tidak cukup masa untuk mencari jawapan dan menyiapkan soalan peperiksaan.</li>
+                <li>Tidak tahu anggaran atau agihan peruntukan masa yang sepatutnya untuk setiap soalan yang dijawab.</li>
+            </ul>
+        </div>
+        <div class="analysis-card" style="border-left-color: #ef4444;">
+            <h3>5. Syarat Lulus & Polisi Peperiksaan</h3>
+            <ul>
+                <li>Pertanyaan lazim mengenai peratusan penetapan markah lulus (Sama ada 50% atau 60% mengikut gred).</li>
+                <li>Kekeliruan berhubung kekerapan pelaksanaan peperiksaan (tempoh diadakan) pada setiap tahun.</li>
+                <li>Pertanyaan mengenai kewujudan sebarang kuota kelulusan yang ditetapkan oleh pihak JPA.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Maklumat Penceramah -->
+    <div class="section-title">Maklumat Penceramah & Urus Setia Sektor Penilaian Kompetensi (SPK) JPA</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Nama Penceramah / Pegawai</th>
+                <th>Peranan</th>
+                <th>Lokasi Terlibat</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Encik Nik Mohamad Rafiq bin Rosdi</strong><br><span style="color:#6b7280; font-size:12px;">PT(K)OD1C</span></td>
+                <td>
+                    • Penceramah<br>
+                    • Penceramah Bersama<br>
+                    • Pelapor Bersama
+                </td>
+                <td>JKSM Putrajaya</td>
+            </tr>
+            <tr>
+                <td><strong>Encik Muhammad Haniff bin Huzaizi</strong><br><span style="color:#6b7280; font-size:12px;">PPT(K)OD3A</span></td>
+                <td>
+                    • Penceramah<br>
+                    • Penceramah Bersama<br>
+                    • Pelapor Utama Program
+                </td>
+                <td>JKSM, JBPM Perak, INTAN Jln Elmu, INTIM Terengganu</td>
+            </tr>
+            <tr>
+                <td><strong>Puan Norakmal binti Fauzi</strong> & <strong>Puan Norhaslindawati binti Mohd Hanafi</strong></td>
+                <td>
+                    • Fasilitator / Pelapor Bersama
+                </td>
+                <td>MADA Kedah</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- MODUL BAHARU: Muat Naik Laporan -->
+    <div class="section-title">Modul Tindakan: Muat Naik Laporan Baharu</div>
+    <div class="upload-module">
+        <form onsubmit="alert('Fungsi ini adalah simulasi antaramuka. Laporan sedang diproses.'); return false;">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="laporan-tajuk">Penganjur / Jabatan</label>
+                    <input type="text" id="laporan-tajuk" placeholder="Contoh: INTAN Sabah" required>
+                </div>
+                <div class="form-group">
+                    <label for="laporan-tarikh">Tarikh Pelaksanaan</label>
+                    <input type="date" id="laporan-tarikh" required>
+                </div>
+                <div class="form-group">
+                    <label for="laporan-medium">Medium</label>
+                    <select id="laporan-medium" required>
+                        <option value="">-- Pilih Medium --</option>
+                        <option value="Fizikal">Fizikal (Bersemuka)</option>
+                        <option value="Dalam Talian">Dalam Talian (Online)</option>
+                        <option value="Hibrid">Hibrid</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="laporan-fail">Muat Naik Fail (PDF / Word)</label>
+                    <input type="file" id="laporan-fail" accept=".pdf,.doc,.docx" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-submit">Muat Naik ke Pangkalan Data</button>
+        </form>
+    </div>
+
+    <script>
+        // Susunan data mengikut kronologi jadual
+        const locations = ['JKSM (7 Ogos)', 'MADA Kedah (10 Ogos)', 'INTIM (19 Ogos)', 'JBPM Perak (3 Sep)', 'INTAN Elmu (13 Sep)'];
+        const participantsData = [55, 110, 44, 25, 46];
+        
+        // Data pecahan mengikut gred untuk Tooltip
+        const gradeDetails = {
+            0: ['Jumlah Calon: 55', 'Gred 1 - 5 (Pelbagai Skim): 55'],
+            1: ['Jumlah Calon: 110', 'Gred 1-4 & Setaraf: 90', 'Gred 5 & Ke atas: 20'],
+            2: ['Jumlah Calon: 44', 'Gred N1: 44'],
+            3: ['Jumlah Calon: 25', 'Gred KB1 / KB5 / KB9: 25'],
+            4: ['Jumlah Calon: 46', 'Gred N1: 46']
+        };
+
+        // Data Carta Bar
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: locations,
+                datasets: [{
+                    label: 'Jumlah Calon',
+                    data: participantsData,
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 6
+                }]
+            },
+            options: { 
+                responsive: true, 
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const index = context.dataIndex;
+                                return gradeDetails[index];
+                            }
+                        }
+                    }
+                } 
+            }
+        });
+
+        // Data Carta Pie
+        const ctxPie = document.getElementById('pieChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: ['Fizikal', 'Hibrid'],
+                datasets: [{
+                    data: [4, 1],
+                    backgroundColor: ['#10b981', '#f59e0b'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, cutout: '65%' }
+        });
+    </script>
+</body>
+</html>
